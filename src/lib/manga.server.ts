@@ -16,10 +16,11 @@ const IMAGE_REQUEST_TIMEOUT_MS = 1_800_000;
  * unwanted media such as photography or pencil sketches can make Flux draw them.
  */
 export const STYLE =
-  "FIXED VISUAL STYLE: one bold modern manhwa/webtoon comic illustration in a single rectangular frame, " +
-  "crisp confident black ink outlines, clean flat cel shading with strong contrast, natural human proportions, " +
-  "expressive dynamic faces, vivid saturated colour accents, dramatic dynamic camera angle, " +
-  "story-specific environment with clear depth, consistent identical visual style across the sequence";
+  "FIXED VISUAL STYLE: one professional Korean webtoon/manhwa story panel in a single rectangular frame, " +
+  "crisp confident ink outlines, clean controlled linework, polished cel shading, selective hard shadows, " +
+  "strong light and shadow separation, rich controlled colours, expressive faces with detailed eyes and facial acting, " +
+  "dynamic anatomy, cinematic composition, strong foreground and background depth, dramatic perspective, " +
+  "clear visual storytelling, polished commercial webtoon finish, consistent character and environment design across the sequence";
 
 
 
@@ -29,8 +30,8 @@ export const STYLE =
  * mystery, no mood grade.
  */
 export const TONE_LOCK =
-  "LIGHTING: natural, clear and well-exposed, exactly as the scene describes (bright daylight stays bright, " +
-  "a night scene is a well-lit night scene); faces, eyes and every environment detail are fully visible";
+  "LIGHTING: story-led and readable, exactly matching the scene's emotional beat and setting; preserve bright daylight, " +
+  "clear night detail and visible faces while allowing dramatic contrast, rim light, hard shadows and intense colour accents when appropriate";
 
 /**
  * Flux has NO negative prompt: every noun written here is a token the model can
@@ -255,9 +256,9 @@ const PROMPT_SYSTEM =
   "EVERY prompt must contain, in this order: (1) the place/setting the line itself describes, (2) who or what is in " +
   "frame — with bible traits woven inline ONLY for characters the line itself is about; if the line involves no person, " +
   "the shot has no people at all, (3) the exact action, body pose and facial expression, (4) 4-6 concrete environmental " +
-  "details, (5) the camera angle and shot size — ALWAYS a medium shot or wide shot that shows the full body or at least " +
-  "waist-up of every person with their surroundings; NEVER a close-up, extreme close-up, tight shot, face-only shot or " +
-  "headshot; low angle / high angle / over-the-shoulder are allowed only when they keep the whole body in frame, " +
+  "details, (5) the most effective cinematic camera angle, shot size, composition and perspective for this exact beat, " +
+  "chosen from wide shot, medium shot, close-up, extreme close-up, over-the-shoulder, low angle, high angle, side angle, " +
+  "Dutch angle or dramatic foreshortening according to the action and emotion, " +
   "(6) the natural lighting and colour the line implies.\n" +
   "RULES:\n" +
   "- LEAD CHARACTER AGE (absolute): the FIRST character in the bible is the main protagonist. He is always a clearly " +
@@ -293,13 +294,18 @@ const PROMPT_SYSTEM =
   "crowds, villagers, strangers or unnamed people show THOSE people — never insert a main character into them.\n" +
   "- A memory, flashback, dream or story-within-the-story is drawn as the remembered event itself, in the place and " +
   "time it happened, not as someone remembering it.\n" +
-  "- LIGHTING & COLOUR: take the lighting ONLY from the line — daytime is bright natural daylight, an indoor scene is " +
-  "a well-lit room, a night scene is a clearly lit night with visible detail. Never add darkness, gloom, shadowy " +
-  "mystery, fog or noir the line does not state. Name the light source and the dominant colours.\n" +
+  "- LIGHTING & COLOUR: direct the lighting to support the exact story beat while preserving the established time and " +
+  "place. Calm moments may use soft light; tense, violent, emotional or mysterious moments may use harder separation, " +
+  "dramatic shadows, rim light or intense colour accents. Keep faces and essential action readable. Name the light source " +
+  "and dominant colours, and never change day, night or weather without script support.\n" +
   "- RICH DETAIL (critical): every prompt is dense with concrete visual detail — at least 4-6 specific drawable things " +
   "in the environment; for each person the posture, hand position, exact expression (eyes, eyebrows, mouth) and " +
   "clothing state. Foreground, midground and background must each have something drawn in them.\n" +
-  "- STAGING & GAZE (critical): write candid in-story staging. State where each person looks — at the other character, at the object they hold, or at what the line says they see — and give each body a three-quarter or profile orientation inside the scene. People are absorbed in the action; nobody poses for the viewer or stares straight out of the frame unless the line itself says they look at us.\n" +
+  "- STAGING & GAZE (critical): stage each character according to the exact action and emotional beat. Use natural body " +
+  "orientation, interaction, gesture, weight distribution and gaze direction, with dynamic poses for movement or conflict. " +
+  "Walking looks like walking, attacks show committed attack mechanics, falls show lost balance, fear creates defensive body " +
+  "language, anger creates aggressive posture, shock creates a full reactive pose, and conversations use natural interaction. " +
+  "People are absorbed in the action; nobody poses for the viewer unless the line itself requires it.\n" +
   "- ALWAYS A SCENE, NEVER A DESIGN: every prompt is one continuous location with a full background — floor, walls or ground, sky or ceiling, and 4-6 props. Never write a reference sheet, model sheet, character design, turnaround, multiple views, a lineup, a floating head, an isolated portrait on a plain backdrop, a duplicated copy of the same character, or an empty blank background.\n" +
   "- CARRY THE SCENE FORWARD: begin from the place, time of day and cast already established by the previous lines, and say that place explicitly in this prompt even if the line does not repeat it.\n" +
   "- Weave a character's fixed traits INLINE (e.g. 'Henan, a thin 17-year-old boy with messy jet-black hair, sits...'). " +
@@ -342,6 +348,22 @@ const PROMPT_SYSTEM =
   "the earlier script lines so the same ability always looks the same; never give a character a power the script did " +
   "not give them. Also describe the battlefield itself in full — terrain, weather, sky, surrounding structures, " +
   "onlookers if the line has them — so the fight reads as happening in a real place at that exact timestamp.\n" +
+  "- ACTION CHOREOGRAPHY (critical): for every physical action explicitly direct ACTION, POSE, BODY ROTATION, WEIGHT " +
+  "SHIFT, DIRECTION OF MOVEMENT, CAMERA PERSPECTIVE, FOREGROUND ELEMENT, IMPACT POINT, ENVIRONMENTAL RESPONSE and FACIAL " +
+  "EXPRESSION. Use clear silhouettes, foreshortening and a decisive peak-action instant. A punch, for example, must show " +
+  "the torso twisting, rear foot driving, arm extending, fist prominent in foreground, target and impact point aligned, " +
+  "and dust or debris reacting where appropriate rather than two characters standing near each other.\n" +
+  "- WEBTOON EFFECTS: select only effects that strengthen this exact beat. Action may use speed lines, impact bursts, " +
+  "directional streaks, motion blur, debris, dust, shockwaves, exaggerated motion, energy or slash trails and impact " +
+  "distortion. Emotion may use subtle background rays, tension lines, dramatic shadow, eye emphasis, atmospheric particles " +
+  "and emotional accents. Power or fantasy may use established aura, energy particles, glow, magic circles, elemental " +
+  "trails and environmental reaction. These are purely visual effects: never request written sound effects, lettering, " +
+  "speech balloons, narration boxes or captions.\n" +
+  "- CAMERA & COMPOSITION: choose the camera specifically for the current story beat; never repeat one fixed shot type. " +
+  "Use wide shots for geography and large-scale action, medium shots for interaction, close-ups for facial emotion, extreme " +
+  "close-ups for intense reactions, low angles for power, high angles for vulnerability or scale, over-the-shoulder shots " +
+  "for conversations, dramatic perspective and foreshortening for attacks, and Dutch angles for instability or tension. " +
+  "The camera must serve the story beat while the established location remains recognisable.\n" +
   "- SETTINGS ARE FAITHFUL AND REPEATED (critical): describe each place exactly as the script has it, plainly and " +
   "simply, with no invented spectacle. Add only fantasy or magical features the script itself establishes. The FIRST " +
   "time a place appears, fix 4-6 concrete physical facts about it (wall and floor material and colour, one or two " +
@@ -361,12 +383,12 @@ const PROMPT_SYSTEM =
   "with writing, labels or logos. Show the OBJECT and the reaction instead, never the writing.\n" +
   "- SHORT / NEARLY EMPTY LINES (critical): some lines are very short — a shout, a name, one word, a reaction, or a " +
   "silent beat with almost no words. Such a line has NO new setting of its own, so you MUST hold the SAME place, the " +
-  "SAME people and the SAME time of day as the surrounding lines, and only change the camera (a different medium or " +
-  "wide angle of the same scene) or the person's expression — NEVER a close-up, extreme close-up or face-only shot. " +
+  "SAME people and the SAME time of day as the surrounding lines, and change only the camera or the person's acting. " +
+  "A close-up or extreme close-up is appropriate when the short line's primary event is an intense facial reaction. " +
   "NEVER invent a new location, new characters, a new era or an unrelated event for a short line, and never jump to a " +
   "scene the script does not have. When such a line is marked with CONTEXT below, take its place and people from that " +
   "context verbatim.\n" +
-  "- 42 to 58 words each — put the exact visible action, named cast and place in the FIRST sentence. Keep every word visual and load-bearing. English only. The image engine gives the beginning much more weight, so never open with mood, history or explanation.\n" +
+  "- 65 to 95 words each — put the exact visible action, named cast and place in the FIRST sentence. Keep every word visual and load-bearing. English only. The image engine gives the beginning much more weight, so never open with mood, history or explanation.\n" +
   "OUTPUT FORMAT (strict about the shape, nothing else): one plain line per requested script line, each starting with " +
   "that script line's own number, then ') ', then the whole prompt on that same single line. Example:\n" +
   "37) In the sunlit courtyard, Henan, a male 23-year-old young man ...\n38) In the same courtyard, Henan turns ...\n" +
@@ -1295,26 +1317,7 @@ const METAPHOR_TRIGGERS: [RegExp, string][] = [
  * is rewritten into neutral, well-lit wording. Genuine script facts (night,
  * rain, a candle) are left alone — only the atmosphere adjectives go.
  */
-const DARK_TRIGGERS: [RegExp, string][] = [
-  [
-    /\b(moody|gloomy|murky|ominous|foreboding|eerie|sinister|brooding|noir|mysterious|shadowy|dimly[- ]lit|dim|low[- ]key|chiaroscuro|oppressive|bleak|desaturated|muted)\s+(lighting|light|atmosphere|mood|tone|palette|colou?rs?|shadows?|room|scene|interior|street|corridor)\b/gi,
-    "clear well-lit $2",
-  ],
-  [
-    /\b(thick|deep|heavy|pitch|near|total|enveloping|swallowing)\s+(darkness|shadow|shadows|gloom|black)\b/gi,
-    "soft natural light",
-  ],
-  [
-    /\b(in|into|through|from|within|amid)\s+(the\s+)?(darkness|gloom|shadows|murk)\b/gi,
-    "$1 the light",
-  ],
-  [/\b(hard|harsh|deep|long|heavy|dramatic)\s+shadows?\b/gi, "soft shadows"],
-  [
-    /\b(moody|gloomy|murky|ominous|foreboding|eerie|sinister|brooding|noir|mysterious|shadowy|dimly[- ]lit|low[- ]key|oppressive|bleak)\b,?\s*/gi,
-    "",
-  ],
-  [/\b(dark|dim)\s+(and|,)\s+(mysterious|moody|gloomy|eerie)\b/gi, "clearly lit"],
-];
+const DARK_TRIGGERS: [RegExp, string][] = [];
 
 /**
  * Art-style scrubber.
@@ -1343,14 +1346,6 @@ const STYLE_TRIGGERS: [RegExp, string][] = [
   [
     /\b(shallow depth of field|depth of field|telephoto|wide[- ]angle lens|macro lens|studio lighting|softbox|golden hour photo|candid|documentary|editorial|portrait photo|headshot|skin pores|subsurface scattering|ray[- ]?traced|volumetric lighting|lens flare|chromatic aberration|long exposure|real[- ]life|true colour photo)\b,?\s*/gi,
     "",
-  ],
-  // Close-up framing of any kind is forbidden: the writing model is told to use
-  // medium/wide shots, but it still slips a "close-up of his face" in now and
-  // then, which Flux renders as a face-only portrait. Strip every variant and
-  // leave the surrounding action intact.
-  [
-    /\b(extreme[- ]?close[- ]?up|extreme close up|close[- ]?up|close up|tight[- ]?shot|tight shot|face[- ]?only|face only|head[- ]?shot|headshot|head shot|macro shot|insert shot|detail shot|reaction shot|pinup|pin-up|portrait|bust shot)\b(?:\s+(?:of|on|showing|of the|of a|of an)\s+[^,.]{0,60})?/gi,
-    "medium shot",
   ],
 ];
 
@@ -1847,7 +1842,7 @@ function clip(s: string, max: number): string {
  * without ever naming faces or eyes as things to draw.
  */
 const STYLE_LEAD =
-  "one bold manhwa/webtoon comic illustration showing";
+  "professional Korean webtoon/manhwa story panel showing";
 
 
 
@@ -1863,9 +1858,10 @@ const STYLE_LEAD =
  * being used for.
  */
 const STYLE_TAIL =
-  "bold manhwa/webtoon comic art, crisp confident black ink outlines, clean flat cel shading with strong contrast, " +
-  "expressive dynamic faces, vivid saturated colour accents, dramatic dynamic camera angle, " +
-  "identical visual style across the sequence";
+  "professional 2D Korean webtoon artwork, crisp confident ink outlines, clean controlled linework, polished cel shading, " +
+  "selective hard shadows, strong light and shadow separation, rich controlled colours, expressive faces, detailed eyes " +
+  "and facial acting, dynamic anatomy, cinematic composition, strong foreground and background depth, dramatic perspective, " +
+  "clear visual storytelling, polished commercial webtoon finish, consistent character design and consistent environment design across the sequence";
 
 
 
@@ -1929,14 +1925,20 @@ function identityBrief(prompt: string, bible?: string): string {
  * positively and concretely instead of being left to the model.
  */
 const STAGING_GUARD =
-  "dynamic pose matching the action, exaggerated perspective for impact moments";
+  "stage each character according to the exact story action and emotional beat; use natural body orientation, interaction, " +
+  "gesture, weight shift and gaze direction, with dynamic poses whenever the moment involves movement or conflict";
 
 /**
  * Framing guard. Panels came back with a head cut off at the top edge or a
  * torso filling the frame, so the safe area is stated positively.
  */
-const FRAMING_GUARD =
-  "shot size matched to the moment — close-up for emotional beats, wide/dynamic angle for action, figures fully inside the frame";
+const FRAMING_RULE =
+  "choose the most effective cinematic webtoon framing for the exact moment: wide shot, medium shot, close-up, extreme " +
+  "close-up, over-the-shoulder, low angle, high angle, side angle, Dutch angle or dramatic perspective as appropriate to the action and emotion";
+
+const WEBTOON_EFFECTS =
+  "use story-appropriate wordless webtoon effects: speed lines, impact bursts, directional streaks, motion blur, dust, debris, " +
+  "shockwaves, energy or slash trails, dramatic shadows, eye emphasis, atmospheric particles, aura, glow or environmental reaction";
 
 /** Environment requirement — a scene, never a floating figure on blank paper. */
 const BACKGROUND_GUARD =
@@ -2051,7 +2053,8 @@ export function composeImagePrompt(
     identity,
     continuity ? clip(`continue the same action and spatial positions from the previous picture: ${continuity}`, 140) : "",
     peopled ? STAGING_GUARD : "",
-    peopled ? FRAMING_GUARD : "",
+    peopled ? FRAMING_RULE : "",
+    peopled ? WEBTOON_EFFECTS : "",
     peopled ? "each person appears once" : "empty location, scenery only",
     BACKGROUND_GUARD,
   ].filter(Boolean);
