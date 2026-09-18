@@ -167,12 +167,10 @@ export async function buildCharacterBible(script: string): Promise<string> {
   const system =
     "You are a character continuity editor. Read the WHOLE script (it may be " +
     "Hinglish/Hindi) and list the recurring characters. For each, give ONE compact English line of FIXED, highly " +
-    "specific visual traits usable verbatim inside an image prompt: age, gender, exact hair colour + length + silhouette, " +
-    "eye colour, skin tone, face shape, build/height, signature clothing WITH exact colours, and two memorable visual " +
-    "identifiers such as a scar, mole, glasses, unusual fringe, jewellery, accessory or garment detail. Make every " +
-    "character instantly identifiable by silhouette and colour palette, including in a crowded panel. No two characters " +
-    "may share the same hairstyle, clothing colours, silhouette or identifier combination. Be concrete — these fixed " +
-    "traits must let an artist redraw the same person hundreds of times identically. 22-38 words per character. Max 10 characters. " +
+    "specific visual traits usable verbatim inside an image prompt: age, gender, exact hair colour + length + style, " +
+    "eye colour, skin tone, face shape, one distinguishing feature (scar, mole, glasses, bandage), build/height, and " +
+    "signature clothing WITH exact colours. Be concrete — these traits must let an artist redraw the same person " +
+    "hundreds of times identically. 16-28 words per character. Max 10 characters. " +
     "After the characters, add up to 6 recurring LOCATIONS the same way, one line each, prefixed 'Place - ', with " +
     "fixed visual details (materials, colours, key furniture/landmarks, time of day if fixed) so the same place is " +
     "drawn identically every time it appears, e.g. 'Place - Henan's home: small brick village house, blue wooden " +
@@ -180,12 +178,13 @@ export async function buildCharacterBible(script: string): Promise<string> {
     "CRITICAL: determine each character's gender from the script (names, pronouns, relationships like brother/sister) " +
     "and make the gender the FIRST and most emphasized trait — write 'male' or 'female' explicitly plus a matching " +
     "noun (man/woman/boy/girl). Never guess wrong or leave gender ambiguous. " +
-    "CRITICAL: determine EVERY character's AGE faithfully from the script (school grade, job, parenthood, being called old/young, " +
+    "CRITICAL: determine each character's AGE from the script (school grade, job, parenthood, being called old/young, " +
     "family roles like grandfather/mother/child) and state it EXPLICITLY right after the gender: a number " +
     "('17 years old', '45 years old') or an exact band ('elderly, over 65', 'middle-aged, 40 to 55', 'teenager', " +
-    "'young child'). Never leave age vague or write just 'young'/'old' — write the concrete age or closest supported band. " +
-    "The protagonist follows exactly the same rule: preserve the age, gender and life stage established by the script; " +
-    "never force an adult age, relationship status or gender that the story does not support. Put the protagonist FIRST. " +
+    "'young child'). Never leave age vague or write just 'young'/'old' — write the concrete age. " +
+    "LEAD CHARACTER OVERRIDE (absolute): the story's main protagonist must always be a clearly adult, unmarried " +
+    "23-year-old young man, even if the script is vague or suggests a teenage boy. Put the protagonist FIRST and " +
+    "describe him exactly as 'male, 23-year-old unmarried young man' — never boy, teenager, schoolboy or child. " +
     "Output plain lines like: Henan: male, 17-year-old Indian boy, messy jet-black hair, dark brown eyes, tan skin, " +
     "thin wiry build, faded grey school shirt with frayed collar, small scar above left eyebrow. " +
     "No headings, no numbering, no extra commentary.";
@@ -212,9 +211,34 @@ export async function buildCharacterBible(script: string): Promise<string> {
   return "";
 }
 
-/** Preserves automatic and user-written character sheets without overriding the lead. */
+/**
+ * The first character line is the lead. Product direction fixes that person as
+ * an adult 23-year-old unmarried man, including user-written sheets, so a model
+ * can never reinterpret a vague "young" protagonist as a 14–16-year-old boy.
+ */
 export function normalizeLeadCharacter(bible: string): string {
-  return bible;
+  const lines = bible.split("\n");
+  const leadIndex = lines.findIndex((line) => {
+    const clean = line.replace(/^[\s\-*•\d.)]+/, "").trim();
+    if (!clean.includes(":")) return false;
+    return !/^(?:place|location|setting)\s*-/i.test(clean);
+  });
+  if (leadIndex < 0) return bible;
+
+  const line = lines[leadIndex] as string;
+  const colon = line.indexOf(":");
+  if (colon < 1) return bible;
+  const name = line.slice(0, colon).trim();
+  let traits = line.slice(colon + 1).trim();
+  traits = traits
+    .replace(/\b(?:male|female)\s*,?\s*/gi, "")
+    .replace(/\b\d{1,2}\s*(?:-|\s)?(?:to|–|-)?\s*\d{0,2}\s*(?:-|\s)?years?[- ]old\s*/gi, "")
+    .replace(/\b(?:teenage[rd]?|adolescent|schoolboy|schoolgirl|boy|girl|child|kid|young woman|woman|man)\b\s*,?\s*/gi, "")
+    .replace(/\b(?:married|unmarried|single|bachelor)\b\s*,?\s*/gi, "")
+    .replace(/^\s*[,;-]+\s*|\s{2,}/g, " ")
+    .trim();
+  lines[leadIndex] = `${name}: male, 23-year-old unmarried young man${traits ? `, ${traits}` : ""}`;
+  return lines.join("\n");
 }
 
 const PROMPT_SYSTEM =
@@ -237,8 +261,9 @@ const PROMPT_SYSTEM =
   "Dutch angle or dramatic foreshortening according to the action and emotion, " +
   "(6) the natural lighting and colour the line implies.\n" +
   "RULES:\n" +
-  "- LEAD CHARACTER FIDELITY (absolute): the FIRST character in the bible is the main protagonist. Preserve that " +
-  "character's script-supported age, gender and life stage exactly like every other character; never re-age or redesign them.\n" +
+  "- LEAD CHARACTER AGE (absolute): the FIRST character in the bible is the main protagonist. He is always a clearly " +
+  "adult, unmarried 23-year-old young man. Repeat that exact age and adult status whenever he appears; never call or " +
+  "depict him as a boy, teenager, schoolboy, child, or 14–16 years old.\n" +
   "- ONE LINE = ONE IMAGE (absolute): exactly one prompt per requested number, in the same order, never merged, never " +
   "split, never skipped, never a placeholder. Each prompt must be visibly DIFFERENT from its neighbours.\n" +
   "- NOTHING INVENTED (absolute): every person, place, object, prop and event in the prompt must come from the script — " +
@@ -287,9 +312,6 @@ const PROMPT_SYSTEM =
   "NEVER write a separate character description block, sheet, reference, lineup or 'plus portrait of'.\n" +
   "- CONSISTENCY: when a bible character DOES appear, repeat their bible traits (hair, eyes, clothing colours) using " +
   "the bible's own words. Never redesign, re-age or re-dress a character between shots.\n" +
-  "- DISTINCT IDENTITIES (critical): every named character must remain immediately distinguishable from every other " +
-  "character by silhouette, hairstyle, face shape, signature colour palette, clothing and memorable identifier. Preserve " +
-  "each person's own exact combination in every panel, especially group scenes; never blend, swap or homogenise traits.\n" +
   "- THE CHARACTER BIBLE IS APPEARANCE REFERENCE ONLY. Never turn its wording into the panel's action, setting or " +
   "composition. The timestamped script alone decides what happens. First describe the exact visible story action and " +
   "location; attach fixed appearance traits only to the people actually present.\n" +
@@ -369,7 +391,7 @@ const PROMPT_SYSTEM =
   "- 65 to 95 words each — put the exact visible action, named cast and place in the FIRST sentence. Keep every word visual and load-bearing. English only. The image engine gives the beginning much more weight, so never open with mood, history or explanation.\n" +
   "OUTPUT FORMAT (strict about the shape, nothing else): one plain line per requested script line, each starting with " +
   "that script line's own number, then ') ', then the whole prompt on that same single line. Example:\n" +
-  "37) In the sunlit courtyard, Henan, with his fixed character-bible appearance ...\n38) In the same courtyard, Henan turns ...\n" +
+  "37) In the sunlit courtyard, Henan, a male 23-year-old young man ...\n38) In the same courtyard, Henan turns ...\n" +
   "No JSON, no quotes, no brackets, no bullets, no headings, no blank lines, and never break one prompt across lines.";
 
 /** Hard ceiling for one published text request; larger payloads can sit idle at the edge. */
@@ -2223,6 +2245,8 @@ export function correctiveVariant(prompt: string, reason: string): string {
     duplicate: "each named person appears exactly once, whole separate bodies, clearly spaced apart",
     bad_crop:
       "a deliberate cinematic composition preserving every story-essential feature; crop only when a close-up or extreme close-up serves the emotional beat",
+    underage_lead:
+      "the main protagonist is unmistakably an adult 23-year-old unmarried young man, with mature adult facial proportions and adult height and build",
     wrong_scene: "exactly the location, cast and action described above and nothing else",
     text: "a completely wordless picture with no lettering anywhere",
   };
