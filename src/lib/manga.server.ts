@@ -16,11 +16,10 @@ const IMAGE_REQUEST_TIMEOUT_MS = 1_800_000;
  * unwanted media such as photography or pencil sketches can make Flux draw them.
  */
 export const STYLE =
-  "FIXED VISUAL STYLE: one clean modern vertical-webtoon story illustration in a single rectangular frame, " +
-  "thin crisp line art, simple flat cel shading, natural human proportions, calm readable faces, " +
-  "light muted low-saturation palette, soft pale washed-out colours, plenty of white and pale grey, " +
-  "gentle daylight, very light soft shadows, plain uncluttered surfaces and a simple story-specific environment, " +
-  "restrained understated finish, never vivid, never neon, never heavily saturated";
+  "FIXED VISUAL STYLE: one bold modern manhwa/webtoon comic illustration in a single rectangular frame, " +
+  "crisp confident black ink outlines, clean flat cel shading with strong contrast, natural human proportions, " +
+  "expressive dynamic faces, vivid saturated colour accents, dramatic dynamic camera angle, " +
+  "story-specific environment with clear depth, consistent identical visual style across the sequence";
 
 
 
@@ -1336,13 +1335,13 @@ const STYLE_TRIGGERS: [RegExp, string][] = [
     "",
   ],
   [
-    /\b(anime|manga|manhwa|manhua|webtoon|comic book|cartoon|chibi|ghibli|shonen|shoujo|seinen|cel[- ]shaded|cel shading|line ?art|ink(ed)? drawing|pencil sketch|sketch(y)?|charcoal|watercolou?r|oil painting|acrylic|gouache|pastel drawing|digital painting|matte painting|concept art|illustration style|storybook illustration|woodcut|engraving|impressionist|surrealist|abstract|noir film|graphic novel)\b/gi,
+    /\b(anime|manga|comic book|cartoon|chibi|ghibli|shonen|shoujo|seinen|ink(ed)? drawing|pencil sketch|sketch(y)?|charcoal|watercolou?r|oil painting|acrylic|gouache|pastel drawing|digital painting|matte painting|concept art|illustration style|storybook illustration|woodcut|engraving|impressionist|surrealist|abstract|noir film)\b/gi,
     "",
   ],
   [/\b(4k|8k|hdr|ultra[- ]detailed|highly detailed render|trending on artstation|artstation)\b/gi, ""],
   // Photographic camera/lens/skin cues drag Flux back to its default photo look.
   [
-    /\b(shallow depth of field|depth of field|telephoto|wide[- ]angle lens|macro lens|studio lighting|softbox|golden hour photo|candid|documentary|editorial|portrait photo|headshot|skin pores|subsurface scattering|ray[- ]?traced|volumetric lighting|lens flare|chromatic aberration|motion blur|long exposure|real[- ]life|true colour photo)\b,?\s*/gi,
+    /\b(shallow depth of field|depth of field|telephoto|wide[- ]angle lens|macro lens|studio lighting|softbox|golden hour photo|candid|documentary|editorial|portrait photo|headshot|skin pores|subsurface scattering|ray[- ]?traced|volumetric lighting|lens flare|chromatic aberration|long exposure|real[- ]life|true colour photo)\b,?\s*/gi,
     "",
   ],
   // Close-up framing of any kind is forbidden: the writing model is told to use
@@ -1848,7 +1847,7 @@ function clip(s: string, max: number): string {
  * without ever naming faces or eyes as things to draw.
  */
 const STYLE_LEAD =
-  "one simple soft muted light-coloured webtoon story illustration showing";
+  "one bold manhwa/webtoon comic illustration showing";
 
 
 
@@ -1864,9 +1863,8 @@ const STYLE_LEAD =
  * being used for.
  */
 const STYLE_TAIL =
-  "simple modern webcomic artwork, thin clean contour lines, flat simple cel shading, natural anatomy, " +
-  "light muted washed-out palette, low saturation, pale soft colours, lots of white and pale grey, gentle even daylight, " +
-  "very light shadows, plain uncluttered background, calm understated look, never vivid or neon, " +
+  "bold manhwa/webtoon comic art, crisp confident black ink outlines, clean flat cel shading with strong contrast, " +
+  "expressive dynamic faces, vivid saturated colour accents, dramatic dynamic camera angle, " +
   "identical visual style across the sequence";
 
 
@@ -1931,14 +1929,14 @@ function identityBrief(prompt: string, bible?: string): string {
  * positively and concretely instead of being left to the model.
  */
 const STAGING_GUARD =
-  "figures turned into the action at a three-quarter angle, looking at each other";
+  "dynamic pose matching the action, exaggerated perspective for impact moments";
 
 /**
  * Framing guard. Panels came back with a head cut off at the top edge or a
  * torso filling the frame, so the safe area is stated positively.
  */
 const FRAMING_GUARD =
-  "medium shot, full-body figures with clear space around them, whole heads and torsos inside the frame, never a close-up";
+  "shot size matched to the moment — close-up for emotional beats, wide/dynamic angle for action, figures fully inside the frame";
 
 /** Environment requirement — a scene, never a floating figure on blank paper. */
 const BACKGROUND_GUARD =
