@@ -995,10 +995,10 @@ const OUTDOOR_WORDS = new Set([
 
 const INDOOR_SHEET = {
   shell: [
-    "pale cream plastered walls, grey stone floor, one tall arched window on the left",
+    "warm ivory plastered walls, charcoal stone floor, one tall arched window on the left",
     "whitewashed brick walls, worn light-wood floor, two square windows on the right wall",
-    "soft beige panelled walls, pale tiled floor, wide doorway at the far end",
-    "light grey stone walls, dull red brick floor, narrow window high on the back wall",
+    "deep green panelled walls, polished tiled floor, wide doorway at the far end",
+    "cool grey stone walls, rich red brick floor, narrow window high on the back wall",
   ],
   fixtures: [
     "a long dark wooden table, four plain chairs, a low bench against the back wall",
@@ -1007,19 +1007,19 @@ const INDOOR_SHEET = {
     "a low table, a rolled mat on the floor, a framed picture on the wall",
   ],
   light: [
-    "even pale daylight entering from the left, very soft shadows",
-    "soft overhead daylight, faint shadows pooling under the furniture",
-    "gentle diffused light from the window on the right, muted shadows",
-    "calm flat daylight filling the room, barely any shadow",
+    "clear directional daylight entering from the left, defined cast shadows",
+    "strong overhead daylight, controlled shadows grounding the furniture",
+    "focused window light from the right, crisp shadow separation",
+    "bright ambient daylight crossed by strong architectural shadows",
   ],
 } as const;
 
 const OUTDOOR_SHEET = {
   shell: [
-    "pale hazy sky, low sandy ground, a line of thin trees along the left edge",
-    "soft overcast sky, dusty grey path underfoot, low stone wall running along the right",
-    "washed pale blue sky, dry grass ground, distant low hills on the horizon",
-    "light misty sky, packed earth ground, a row of plain low buildings behind",
+    "clear cyan sky, ochre sandy ground, a line of dark green trees along the left edge",
+    "layered overcast sky, textured grey path underfoot, low stone wall running along the right",
+    "rich blue sky, golden dry grass, distant violet-grey hills on the horizon",
+    "bright mist-edged sky, packed earth ground, a row of weathered low buildings behind",
   ],
   fixtures: [
     "a leaning wooden post, a shallow ditch, scattered small rocks",
@@ -1028,10 +1028,10 @@ const OUTDOOR_SHEET = {
     "a wooden fence, a clay water pot, tall dry weeds at the edge",
   ],
   light: [
-    "flat pale daylight from above, very soft shadows on the ground",
-    "gentle diffused daylight, faint long shadows to the right",
-    "soft even light with a hazy horizon, muted shadows",
-    "calm bright but colourless daylight, minimal shadow",
+    "strong daylight from above, crisp shadows on the ground",
+    "directional daylight, long defined shadows to the right",
+    "clear lateral light with atmospheric depth along the horizon",
+    "bright daylight with strong shape-defining shadow separation",
   ],
 } as const;
 
@@ -1358,7 +1358,7 @@ export function sanitizePrompt(p: string): string {
     )
     .replace(
       /\b(black[- ]and[- ]white|black ?& ?white|monochrome|monochromatic|gr[ae]yscale|sepia|screentone|halftone|ink wash only)\b/gi,
-      "soft restrained cel colours",
+      "rich controlled cel colours",
     );
   for (const [re, to] of TEXT_TRIGGERS) out = out.replace(re, to);
   for (const [re, to] of METAPHOR_TRIGGERS) out = out.replace(re, to);
@@ -2241,10 +2241,10 @@ export function correctiveVariant(prompt: string, reason: string): string {
     no_background:
       "a fully painted location filling the entire background with depth, furniture, props and scenery",
     facing_viewer:
-      "characters turned into the scene at a three-quarter or profile angle, eyes on each other or on what they handle",
+      "characters naturally engaged in the exact action, with body orientation, gesture and gaze serving the story beat",
     duplicate: "each named person appears exactly once, whole separate bodies, clearly spaced apart",
     bad_crop:
-      "a balanced medium or wide composition with every important character's complete head, face and body clearly inside the frame",
+      "a deliberate cinematic composition preserving every story-essential feature; crop only when a close-up or extreme close-up serves the emotional beat",
     underage_lead:
       "the main protagonist is unmistakably an adult 23-year-old unmarried young man, with mature adult facial proportions and adult height and build",
     wrong_scene: "exactly the location, cast and action described above and nothing else",
