@@ -1335,7 +1335,7 @@ const STYLE_TRIGGERS: [RegExp, string][] = [
     "",
   ],
   [
-    /\b(anime|manga|comic book|cartoon|chibi|ghibli|shonen|shoujo|seinen|ink(ed)? drawing|pencil sketch|sketch(y)?|charcoal|watercolou?r|oil painting|acrylic|gouache|pastel drawing|digital painting|matte painting|concept art|illustration style|storybook illustration|woodcut|engraving|impressionist|surrealist|abstract|noir film\b/gi,
+    /\b(anime|manga|comic book|cartoon|chibi|ghibli|shonen|shoujo|seinen|ink(ed)? drawing|pencil sketch|sketch(y)?|charcoal|watercolou?r|oil painting|acrylic|gouache|pastel drawing|digital painting|matte painting|concept art|illustration style|storybook illustration|woodcut|engraving|impressionist|surrealist|abstract|noir film)\b/gi,
     "",
   ],
   [/\b(4k|8k|hdr|ultra[- ]detailed|highly detailed render|trending on artstation|artstation)\b/gi, ""],
