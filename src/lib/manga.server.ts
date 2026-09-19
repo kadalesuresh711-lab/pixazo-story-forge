@@ -357,8 +357,8 @@ const PROMPT_SYSTEM =
   "directional streaks, motion blur, debris, dust, shockwaves, exaggerated motion, energy or slash trails and impact " +
   "distortion. Emotion may use subtle background rays, tension lines, dramatic shadow, eye emphasis, atmospheric particles " +
   "and emotional accents. Power or fantasy may use established aura, energy particles, glow, magic circles, elemental " +
-  "trails and environmental reaction. These are purely visual effects: never request written sound effects, lettering, " +
-  "speech balloons, narration boxes or captions.\n" +
+  "trails and environmental reaction. Do not write an SFX word yourself; the renderer adds one script-matched action SFX. " +
+  "Never request dialogue, speech balloons, narration boxes, captions, signs or unrelated lettering.\n" +
   "- CAMERA & COMPOSITION: choose the camera specifically for the current story beat; never repeat one fixed shot type. " +
   "Use wide shots for geography and large-scale action, medium shots for interaction, close-ups for facial emotion, extreme " +
   "close-ups for intense reactions, low angles for power, high angles for vulnerability or scale, over-the-shoulder shots " +
@@ -379,8 +379,8 @@ const PROMPT_SYSTEM =
   "shot, no people:'. Never add a silhouette, an onlooker or a main character just to fill the frame.\n" +
   "- CROWD LINES: if the line says many people, everyone, a crowd, an army, soldiers or people running, show that " +
   "crowd or force, made of unnamed people who are not the main cast.\n" +
-  "- NO TEXT: never describe text, letters, words, numbers, signs, posters, banners, newspapers, book pages, screens " +
-  "with writing, labels or logos. Show the OBJECT and the reaction instead, never the writing.\n" +
+  "- NO TEXT: never describe dialogue, captions, letters, numbers, signs, posters, banners, newspapers, book pages, screens " +
+  "with writing, labels or logos. The renderer alone may add one action SFX word selected from the approved list.\n" +
   "- SHORT / NEARLY EMPTY LINES (critical): some lines are very short — a shout, a name, one word, a reaction, or a " +
   "silent beat with almost no words. Such a line has NO new setting of its own, so you MUST hold the SAME place, the " +
   "SAME people and the SAME time of day as the surrounding lines, and change only the camera or the person's acting. " +
@@ -1941,10 +1941,44 @@ const WEBTOON_EFFECTS =
   "shockwaves, energy or slash trails, dramatic shadows, eye emphasis, atmospheric particles, aura, glow or environmental reaction";
 
 const ACTION_BEAT =
-  /\b(attack(?:s|ed|ing)?|fight(?:s|ing)?|battle|combat|punch(?:es|ed|ing)?|kick(?:s|ed|ing)?|strike(?:s|uck|iking)?|slash(?:es|ed|ing)?|stab(?:s|bed|bing)?|shoot(?:s|ing)?|fire[sd]?|charge(?:s|d|ing)?|rush(?:es|ed|ing)?|run(?:s|ning)?|sprint(?:s|ed|ing)?|chase(?:s|d|ing)?|jump(?:s|ed|ing)?|leap(?:s|t|ed|ing)?|dodge(?:s|d|ing)?|fall(?:s|ing)?|fell|throw(?:s|ing)?|threw|smash(?:es|ed|ing)?|crash(?:es|ed|ing)?|collid(?:e|es|ed|ing)|impact|explod(?:e|es|ed|ing)|blast(?:s|ed|ing)?|transform(?:s|ed|ing|ation)?|awaken(?:s|ed|ing)?|spell|magic|aura|energy|lightning|flames?|shockwave|weapon|sword|blade|arrow|bullet|monster|demon|beast|war|army|running|flying|escaping|struggling|grabbing|pushing|pulling|टक्कर|हमला|लड़ाई|दौड़|भाग|कूद|मुक्का|लात|तलवार|गोली|जादू|शक्ति)\b/i;
+  /\b(attack(?:s|ed|ing)?|fight(?:s|ing)?|battle|combat|punch(?:es|ed|ing)?|kick(?:s|ed|ing)?|strike(?:s|uck|iking)?|slash(?:es|ed|ing)?|stab(?:s|bed|bing)?|shoot(?:s|ing)?|fire[sd]?|charge(?:s|d|ing)?|rush(?:es|ed|ing)?|run(?:s|ning)?|sprint(?:s|ed|ing)?|chase(?:s|d|ing)?|jump(?:s|ed|ing)?|leap(?:s|t|ed|ing)?|dodge(?:s|d|ing)?|fall(?:s|ing)?|fell|throw(?:s|ing)?|threw|smash(?:es|ed|ing)?|crash(?:es|ed|ing)?|collid(?:e|es|ed|ing)|impact|explod(?:e|es|ed|ing)|blast(?:s|ed|ing)?|transform(?:s|ed|ing|ation)?|awaken(?:s|ed|ing)?|spell|magic|aura|energy|lightning|flames?|shockwave|weapon|sword|blade|arrow|bullet|monster|demon|beast|war|army|running|flying|escaping|struggling|grabbing|pushing|pulling)\b|(?:टक्कर|हमला|लड़ाई|दौड़|भाग|कूद|मुक्का|लात|तलवार|गोली|जादू|शक्ति)/i;
 
 const ACTION_DIRECTION =
-  "ACTION PANEL — freeze the decisive peak-motion instant, not a standing pose: show a clear movement path, forceful body rotation and weight transfer, strong foreshortening or a dynamic tilted camera, foreground-to-background depth, and a clearly readable impact or destination; add at least three fitting wordless motion effects such as dense directional speed lines, layered motion trails, an impact burst or shockwave, flying dust and debris, displaced clothing or hair, energy or slash trails, and visible environmental reaction; expressions and gaze must show effort, speed, danger and impact";
+  "ACTION PANEL — freeze the decisive peak-motion instant, not a standing pose: show a clear movement path, forceful body rotation and weight transfer, strong foreshortening or a dynamic tilted camera, foreground-to-background depth, and a clearly readable impact or destination; add at least three fitting visual effects such as dense directional speed lines, layered motion trails, an impact burst or shockwave, flying dust and debris, displaced clothing or hair, energy or slash trails, and visible environmental reaction; expressions and gaze must show effort, speed, danger and impact";
+
+function actionSfx(prompt: string, line?: string): string {
+  const beat = `${line ?? ""} ${prompt}`;
+  const match = (pattern: RegExp) => pattern.test(beat);
+  if (match(/\b(punch|kick|fast attack|rush attack)\b|मुक्का|लात/i)) return "WHOOSH! → BAM!";
+  if (match(/\b(explosion|explode|detonate|massive blast)\b/i)) return "KRA-BOOM!";
+  if (match(/\b(power release|huge blast|energy burst)\b|शक्ति/i)) return "BOOOOM!";
+  if (match(/\b(electric|electricity|lightning|thunder)\b/i)) return "ZZZTT!";
+  if (match(/\b(charge|charging|vibrat|charged energy)\b/i)) return "VWOOM!";
+  if (match(/\b(flame|fire burst|energy flame)\b/i)) return "FWOOM!";
+  if (match(/\b(shockwave|shock wave)\b/i)) return "WHOOM!";
+  if (match(/\b(draw|unsheath).{0,20}\b(sword|blade)\b|तलवार.*(?:निकाल|खींच)/i)) return "SHING!";
+  if (match(/\b(weapon|sword|blade).{0,30}\b(collide|clash|block)\b|तलवार.*टक्कर/i)) return "CLANG!";
+  if (match(/\b(stab|pierce)\b/i)) return "SHNK!";
+  if (match(/\b(slash|slice|sword swing|blade swing)\b|तलवार/i)) return "SWOOSH!";
+  if (match(/\b(crash|smash|collision)\b|टक्कर/i)) return "CRASH!";
+  if (match(/\b(slam|slammed)\b/i)) return "SLAM!";
+  if (match(/\b(crack|breaking|bone breaks?)\b/i)) return "KRAK!";
+  if (match(/\b(fall|fell|hits? the ground|body hitting)\b/i)) return "THUD!";
+  if (match(/\b(heavy landing|lands? heavily)\b/i)) return "THUMP!";
+  if (match(/\b(heavy impact|brutal hit|powerful hit)\b|हमला/i)) return "WHAM!";
+  if (match(/\b(dash|launches? forward|explosive acceleration)\b/i)) return "DASH!";
+  if (match(/\b(teleport|too fast|extremely fast|vanish(?:es|ed)?|blur)\b/i)) return "ZOOOM!";
+  if (match(/\b(sudden movement|quick movement|dodge)\b/i)) return "SHHHK!";
+  if (match(/\b(rush of air|air rushing|powerful rush)\b/i)) return "FWOOSH!";
+  if (match(/\b(slash|swift|swish)\b/i)) return "SWISH!";
+  if (match(/\b(run|sprint|chase|rush|jump|leap|fly|flying|escape)\b|दौड़|भाग|कूद/i)) return "WHOOSH!";
+  return "BAM!";
+}
+
+function sfxDirection(prompt: string, line?: string): string {
+  const sfx = actionSfx(prompt, line);
+  return `render exactly one large stylized SFX reading “${sfx}”, integrated beside the matching movement or impact with bold hand-drawn webtoon lettering, perspective distortion and an effect-matched outline; this SFX is the only visible lettering in the image`;
+}
 
 function isActionBeat(prompt: string, line?: string): boolean {
   return ACTION_BEAT.test(`${line ?? ""} ${prompt}`);
@@ -2074,7 +2108,7 @@ export function composeImagePrompt(
   // The set sheet and the fixed look are BOTH reserved: neither may ever be
   // trimmed away, because a trimmed set sheet is a redrawn room and a trimmed
   // look is a panel in a different art style from its neighbours.
-  const actionLead = action ? `${ACTION_DIRECTION}. ` : "";
+  const actionLead = action ? `${ACTION_DIRECTION}. ${sfxDirection(fixed, line)}. ` : "";
   const tail = `${setLock ? `${setLock}. ` : ""}${STYLE_TAIL}. ${SINGLE_FRAME_GUARD}`;
   const scene = clip(
     parts
