@@ -1940,6 +1940,16 @@ const WEBTOON_EFFECTS =
   "use story-appropriate wordless webtoon effects: speed lines, impact bursts, directional streaks, motion blur, dust, debris, " +
   "shockwaves, energy or slash trails, dramatic shadows, eye emphasis, atmospheric particles, aura, glow or environmental reaction";
 
+const ACTION_BEAT =
+  /\b(attack(?:s|ed|ing)?|fight(?:s|ing)?|battle|combat|punch(?:es|ed|ing)?|kick(?:s|ed|ing)?|strike(?:s|uck|iking)?|slash(?:es|ed|ing)?|stab(?:s|bed|bing)?|shoot(?:s|ing)?|fire[sd]?|charge(?:s|d|ing)?|rush(?:es|ed|ing)?|run(?:s|ning)?|sprint(?:s|ed|ing)?|chase(?:s|d|ing)?|jump(?:s|ed|ing)?|leap(?:s|t|ed|ing)?|dodge(?:s|d|ing)?|fall(?:s|ing)?|fell|throw(?:s|ing)?|threw|smash(?:es|ed|ing)?|crash(?:es|ed|ing)?|collid(?:e|es|ed|ing)|impact|explod(?:e|es|ed|ing)|blast(?:s|ed|ing)?|transform(?:s|ed|ing|ation)?|awaken(?:s|ed|ing)?|spell|magic|aura|energy|lightning|flames?|shockwave|weapon|sword|blade|arrow|bullet|monster|demon|beast|war|army|running|flying|escaping|struggling|grabbing|pushing|pulling|टक्कर|हमला|लड़ाई|दौड़|भाग|कूद|मुक्का|लात|तलवार|गोली|जादू|शक्ति)\b/i;
+
+const ACTION_DIRECTION =
+  "ACTION PANEL — freeze the decisive peak-motion instant, not a standing pose: show a clear movement path, forceful body rotation and weight transfer, strong foreshortening or a dynamic tilted camera, foreground-to-background depth, and a clearly readable impact or destination; add at least three fitting wordless motion effects such as dense directional speed lines, layered motion trails, an impact burst or shockwave, flying dust and debris, displaced clothing or hair, energy or slash trails, and visible environmental reaction; expressions and gaze must show effort, speed, danger and impact";
+
+function isActionBeat(prompt: string, line?: string): boolean {
+  return ACTION_BEAT.test(`${line ?? ""} ${prompt}`);
+}
+
 /** Environment requirement — a scene, never a floating figure on blank paper. */
 const BACKGROUND_GUARD =
   "detailed environment with depth, props and scenery behind them";
@@ -1988,6 +1998,7 @@ export function composeImagePrompt(
     bible,
   );
   const peopled = hasPeople(fixed, bible);
+  const action = isActionBeat(fixed, line);
   // Flux has no negative channel, so an "no people / unpopulated" phrase left
   // inside a PEOPLED scene both confused the cast decision above and drew extra
   // bystanders. Once the scene is known to have people, the phrase is dropped.
@@ -2049,12 +2060,13 @@ export function composeImagePrompt(
   // "no speech bubbles" literally puts speech bubbles into the picture.
   const parts = [
     `${STYLE_LEAD} ${placeLead}${beat.lead}`,
+    action ? ACTION_DIRECTION : "",
     restText,
     identity,
     continuity ? clip(`continue the same action and spatial positions from the previous picture: ${continuity}`, 140) : "",
     peopled ? STAGING_GUARD : "",
     peopled ? FRAMING_RULE : "",
-    peopled ? WEBTOON_EFFECTS : "",
+    peopled && !action ? WEBTOON_EFFECTS : "",
     peopled ? "each person appears once" : "empty location, scenery only",
     BACKGROUND_GUARD,
   ].filter(Boolean);
@@ -2063,7 +2075,9 @@ export function composeImagePrompt(
   // The set sheet and the fixed look are BOTH reserved: neither may ever be
   // trimmed away, because a trimmed set sheet is a redrawn room and a trimmed
   // look is a panel in a different art style from its neighbours.
-  const tail = `${setLock ? `${setLock}. ` : ""}${STYLE_TAIL}. ${SINGLE_FRAME_GUARD}`;
+  // Action direction is repeated in the reserved tail so long scene prompts
+  // can never trim away the movement, impact or effects instructions.
+  const tail = `${setLock ? `${setLock}. ` : ""}${action ? `${ACTION_DIRECTION}. ` : ""}${STYLE_TAIL}. ${SINGLE_FRAME_GUARD}`;
   const scene = clip(
     parts
       .join(". ")
