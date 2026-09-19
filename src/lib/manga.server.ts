@@ -2060,7 +2060,6 @@ export function composeImagePrompt(
   // "no speech bubbles" literally puts speech bubbles into the picture.
   const parts = [
     `${STYLE_LEAD} ${placeLead}${beat.lead}`,
-    action ? ACTION_DIRECTION : "",
     restText,
     identity,
     continuity ? clip(`continue the same action and spatial positions from the previous picture: ${continuity}`, 140) : "",
@@ -2075,19 +2074,20 @@ export function composeImagePrompt(
   // The set sheet and the fixed look are BOTH reserved: neither may ever be
   // trimmed away, because a trimmed set sheet is a redrawn room and a trimmed
   // look is a panel in a different art style from its neighbours.
-  // Action direction is repeated in the reserved tail so long scene prompts
-  // can never trim away the movement, impact or effects instructions.
-  const tail = `${setLock ? `${setLock}. ` : ""}${action ? `${ACTION_DIRECTION}. ` : ""}${STYLE_TAIL}. ${SINGLE_FRAME_GUARD}`;
+  const actionLead = action ? `${ACTION_DIRECTION}. ` : "";
+  const tail = `${setLock ? `${setLock}. ` : ""}${STYLE_TAIL}. ${SINGLE_FRAME_GUARD}`;
   const scene = clip(
     parts
       .join(". ")
       .replace(/,\s*\./g, ".")
       .replace(/\.\s*\./g, ".")
       .replace(/\s{2,}/g, " "),
-    Math.max(200, IMAGE_PROMPT_BUDGET - tail.length - 2),
+    Math.max(200, IMAGE_PROMPT_BUDGET - actionLead.length - tail.length - 2),
   );
 
-  return `${scene}. ${tail}`;
+  // Action direction sits before the scene and outside its trimming budget, so
+  // Pixazo always receives movement, camera and effect instructions first.
+  return `${actionLead}${scene}. ${tail}`;
 }
 
 
