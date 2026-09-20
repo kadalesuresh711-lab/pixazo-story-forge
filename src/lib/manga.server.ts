@@ -1874,7 +1874,8 @@ const STYLE_TAIL =
  * into the picture, which is what kept producing pages with balloons.
  */
 const SINGLE_FRAME_GUARD =
-  "exactly one illustration filling the whole image, one continuous scene inside a single clean rectangular frame";
+  "exactly one single illustration filling the entire image edge to edge, one continuous scene at one moment from one camera, " +
+  "a single uninterrupted picture with nothing dividing it";
 
 
 
@@ -1982,6 +1983,37 @@ function sfxDirection(prompt: string, line?: string): string {
 
 function isActionBeat(prompt: string, line?: string): boolean {
   return ACTION_BEAT.test(`${line ?? ""} ${prompt}`);
+}
+
+/**
+ * STRICT combat test — the only case where a visible SFX word is allowed.
+ * Running, jumping, flying, glowing auras, magic objects, crowds and ordinary
+ * movement are action for STAGING purposes but stay completely wordless.
+ */
+const COMBAT_SFX_BEAT =
+  /\b(attack(?:s|ed|ing)?|fight(?:s|ing)?|battle|combat|punch(?:es|ed|ing)?|kick(?:s|ed|ing)?|slash(?:es|ed|ing)?|stab(?:s|bed|bing)?|strike(?:s|ing)?|struck|clash(?:es|ed|ing)?|smash(?:es|ed|ing)?|slam(?:s|med|ming)?|collide[sd]?|collision|explosion|explod(?:e|es|ed|ing)|detonat\w*|blast(?:s|ed|ing)?|shockwave|gunshot|shoot(?:s|ing)?|shot|sword|blade|weapon|bullet|impact(?:s|ed)?|crash(?:es|ed|ing)?)\b|(?:टक्कर|हमला|लड़ाई|मुक्का|लात|तलवार|गोली|विस्फोट)/i;
+
+function isCombatBeat(prompt: string, line?: string): boolean {
+  return COMBAT_SFX_BEAT.test(`${line ?? ""} ${prompt}`);
+}
+
+/**
+ * Scale direction. Big real-world subjects kept coming back miniature (a school
+ * drawn as one small cottage, a hall as a tiny room, a ship as a rowing boat),
+ * so their true size is stated positively with human size references. Genuinely
+ * small subjects are left alone.
+ */
+const BIG_SUBJECT =
+  /\b(school|academy|college|university|campus|hall|auditorium|stadium|arena|palace|castle|fortress|temple|shrine|cathedral|tower|skyscraper|city|town|street|market|harbou?r|port|ship|vessel|boat|warship|train|station|airport|bridge|mountain|cliff|valley|forest|army|crowd|hangar|factory|gate|courtyard|library|mansion|dome|wall)\b/i;
+const SMALL_HINT = /\b(tiny|small|little|miniature|toy|model|cramped|narrow little)\b/i;
+
+function scaleDirection(sceneText: string): string {
+  if (!BIG_SUBJECT.test(sceneText) || SMALL_HINT.test(sceneText)) return "";
+  return (
+    "TRUE SCALE — draw every large structure, vehicle, landscape and gathering at its full monumental real-world size: " +
+    "towering height, great width and deep distance, with people, doors and nearby objects placed in frame as clear size references " +
+    "that make the subject read as vast; use a wide establishing camera and strong perspective so the sheer scale is obvious"
+  );
 }
 
 /** Environment requirement — a scene, never a floating figure on blank paper. */
@@ -2108,7 +2140,15 @@ export function composeImagePrompt(
   // The set sheet and the fixed look are BOTH reserved: neither may ever be
   // trimmed away, because a trimmed set sheet is a redrawn room and a trimmed
   // look is a panel in a different art style from its neighbours.
-  const actionLead = action ? `${ACTION_DIRECTION}. ${sfxDirection(fixed, line)}. ` : "";
+  //
+  // A visible SFX word belongs ONLY to a real combat impact. Running, jumping,
+  // flying and glowing magic are staged as action but stay wordless.
+  const combat = action && isCombatBeat(fixed, line);
+  const actionLead = action
+    ? `${ACTION_DIRECTION}. ${combat ? `${sfxDirection(fixed, line)}. ` : `${NO_TEXT_GUARD}. `}`
+    : "";
+  const scaleLead = scaleDirection(`${line ?? ""} ${sceneText}`);
+  const lead = `${scaleLead ? `${scaleLead}. ` : ""}${actionLead}`;
   const tail = `${setLock ? `${setLock}. ` : ""}${STYLE_TAIL}. ${SINGLE_FRAME_GUARD}`;
   const scene = clip(
     parts
@@ -2116,12 +2156,12 @@ export function composeImagePrompt(
       .replace(/,\s*\./g, ".")
       .replace(/\.\s*\./g, ".")
       .replace(/\s{2,}/g, " "),
-    Math.max(200, IMAGE_PROMPT_BUDGET - actionLead.length - tail.length - 2),
+    Math.max(200, IMAGE_PROMPT_BUDGET - lead.length - tail.length - 2),
   );
 
-  // Action direction sits before the scene and outside its trimming budget, so
-  // Pixazo always receives movement, camera and effect instructions first.
-  return `${actionLead}${scene}. ${tail}`;
+  // Scale and action direction sit before the scene and outside its trimming
+  // budget, so Pixazo always receives size, movement and effect instructions.
+  return `${lead}${scene}. ${tail}`;
 }
 
 
