@@ -1130,6 +1130,14 @@ function Index() {
       }
 
       record(shot.index, { prompt, status: "drawing", error: undefined });
+      // A repair or reroll must ask for something DIFFERENT from what came
+      // back, otherwise the same faulty composition is drawn again. Fix scene
+      // re-states the exact moment, true scale and one-scene rule; reroll keeps
+      // the scene facts but asks for a fresh single-scene composition.
+      const correction = freshPrompt
+        ? ` Draw exactly the moment at ${shot.start}s: one single continuous illustration filling the whole image, one camera, everything at its full real-world size with people as size references.`
+        : ` Redraw as one single continuous illustration filling the whole image from one camera, with a fresh composition and viewing angle, everything at its full real-world size.`;
+      const drawPrompt = `${prompt}${correction}`;
       let last = "render failed";
       for (let attempt = 0; attempt < 3; attempt++) {
         try {
@@ -1137,8 +1145,10 @@ function Index() {
             draw({
               data: {
                 ...stamp(),
-                prompt,
-                seed: 10_000 + shot.index * 31 + Math.floor(Math.random() * 900_000),
+                prompt: drawPrompt,
+                // Independent of the panel index, so a reroll is never the
+                // same draw as the one the user rejected.
+                seed: Math.floor(Math.random() * 2_000_000_000),
                 slot: slotBase + attempt,
                 bible,
                 line: shot.text,
